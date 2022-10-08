@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:webx_pos/database/database_handler.dart';
 
 import 'package:webx_pos/models/product_variant.dart';
@@ -13,21 +14,69 @@ class ProductController extends ChangeNotifier {
 
   ProductRepo productRepo = ProductRepo();
   List<ProductData> productList = [];
+  List<Map<String, dynamic>> productStockCountList = [];
+  bool isStockLoading = true;
 
   ProductController() {
     getProducts();
   }
 
   void getProducts() {
+    isStockLoading = true;
     productRepo.productWithVariant().then((value) {
       productList = value;
-      notifyListeners();
+      getProductStockCount(productList).then((values) {
+        isStockLoading = false;
+        notifyListeners();
+      });
     });
   }
 
+  num getStockCount(int index, int productId) {
+    return isStockLoading
+        ? 0
+        : productStockCountList
+            .elementAt(index)[productList.elementAt(index).id.toString()];
+  }
+
+  Future<void> getProductStockCount(List<ProductData> productList) async {
+    isStockLoading = true;
+    productStockCountList.clear();
+    for (int i = 0; i < productList.length; i++) {
+      num value = await productRepo.getProductStockCount(
+        productList.elementAt(i).id.toString(),
+      );
+      productStockCountList
+          .add({productList.elementAt(i).id.toString(): value});
+    }
+    isStockLoading = false;
+    notifyListeners();
+  }
+
+  void setInitialData({bool forEdit = true, ProductData? productData}) {
+    if (forEdit) {
+      if (productData != null) {
+        productNameEditingController.text = productData.name!;
+        productDescEditingController.text = productData.desc ?? "";
+        nameListTextEditingController.clear();
+        unitValueListTextEditingController.clear();
+        priceListTextEditingController.clear();
+        if (productData.variants != null && productData.variants!.isNotEmpty) {
+          for (int i = 0; i < productData.variants!.length; i++) {
+            nameListTextEditingController.add(TextEditingController(
+                text: productData.variants!.elementAt(i).name));
+            unitValueListTextEditingController.add(TextEditingController(
+                text: productData.variants!.elementAt(i).unit.toString()));
+            priceListTextEditingController.add(TextEditingController(
+                text: productData.variants!.elementAt(i).price.toString()));
+          }
+        }
+      }
+    }
+  }
+
   Future<void> updateProductStock(int productId, double stockCount) async {
-    await productRepo.updateProduct(productId,
-        updateData: {DatabaseHandler.columnStockCount: stockCount});
+    await productRepo.updateStock(productId, stockCount);
   }
 
   Future<void> addNewVariant() async {
@@ -47,6 +96,12 @@ class ProductController extends ChangeNotifier {
           productId: id,
           unit: unitValueListTextEditingController.elementAt(i).text);
     }
+    final stockId = productRepo.updateStock(id, 0);
+    getProductStockCount(productList).then((value) {
+      print("Product Stocks loaded");
+      isStockLoading = false;
+      notifyListeners();
+    });
   }
 
   // remove

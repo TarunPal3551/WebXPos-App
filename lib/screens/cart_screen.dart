@@ -16,9 +16,6 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("cartController.cartProducts.length");
-    print(cartController.cartProducts.length);
-    // TODO: implement build
     return Scaffold(
       backgroundColor: WebXColor.backgroundColor,
       body: ChangeNotifierProvider.value(
@@ -180,6 +177,7 @@ class CartScreen extends StatelessWidget {
                                     listen: false)
                                 .createOrder();
                         if (orderModel != null) {
+                          Provider.of<ProductController>(context, listen: false).getProducts();
                           CommonWidget.successDialog(
                                   context: context, orderId: orderModel.id!)
                               .then((value) async {

@@ -7,6 +7,7 @@ class DatabaseHandler {
   static String productTable = "Products";
   static String variantsTable = "Variants";
   static String ordersTable = "Orders";
+  static String stockTable = "productStocks";
   static String orderItemsTable = "OrderItems";
 
   // columns
@@ -50,19 +51,23 @@ class DatabaseHandler {
     Database? db = await instance.database;
     Map<String, dynamic> insertData = data!;
     insertData[createAt] = DateTime.now().toIso8601String();
-    insertData[updatedAt] = DateTime.now().toIso8601String();
+    insertData[updatedAt] = null;
     return await db!.insert(tableName, insertData);
   }
 
-  Future<int> updateData(String tableName, int id,
-      {Map<String, dynamic>? data}) async {
+  Future<int> updateData(
+    String tableName,
+    int id, {
+    Map<String, dynamic>? data,
+    String? columnName,
+  }) async {
     Database? db = await instance.database;
     Map<String, dynamic> insertData = data!;
     insertData[updatedAt] = DateTime.now().toIso8601String();
     return await db!.update(
       tableName,
       insertData,
-      where: columnId + " = ?",
+      where: (columnName ?? columnId) + " = ?",
       whereArgs: [id],
     );
   }
@@ -82,15 +87,15 @@ class DatabaseHandler {
     }
   }
 
-  Future<List<Map<String, Object?>>> getDataByJoiningTables(
-      String table1, String table2) async {
-    Database? db = await instance.database;
-    return await db!.rawQuery("SELECT $table1.$columnName,$table1.$columnDesc, "
-        "$table1.$columnId,$table2.$columnId"
-        ",$table2.$columnName"
-        ",$table2.$columnDesc,$table2.$columnProductId,"
-        "$table2.$columnPrice,$table2.$columnUnitValue FROM $table1 JOIN $table2 ON $table1.$columnId=$table2.$columnProductId");
-  }
+  // Future<List<Map<String, Object?>>> getDataByJoiningTables(
+  //     String table1, String table2) async {
+  //   Database? db = await instance.database;
+  //   return await db!.rawQuery("SELECT $table1.$columnName,$table1.$columnDesc, "
+  //       "$table1.$columnId,$table2.$columnId"
+  //       ",$table2.$columnName"
+  //       ",$table2.$columnDesc,$table2.$columnProductId,"
+  //       "$table2.$columnPrice,$table2.$columnUnitValue FROM $table1 JOIN $table2 ON $table1.$columnId=$table2.$columnProductId");
+  // }
 
   Future _onCreate(Database db, int version) async {
     await db.execute('''
@@ -98,10 +103,8 @@ class DatabaseHandler {
             $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
             $columnName TEXT NOT NULL,
             $columnDesc TEXT NOT NULL,
-            $columnStockCount num,
             $createAt DATETIME,
-            $updatedAt DATETIME
-                        
+            $updatedAt DATETIME      
           )
           ''');
 
@@ -117,6 +120,7 @@ class DatabaseHandler {
             $updatedAt DATETIME
           )
           ''');
+
     await db.execute('''
           CREATE TABLE $ordersTable (
             $columnId num PRIMARY KEY,
@@ -138,6 +142,17 @@ class DatabaseHandler {
             $columnOrderId INTEGER NOT NULL,
             $columnProductId INTEGER NOT NULL,
             $columnProductName TEXT NOT NULL,
+            $createAt DATETIME,
+            $updatedAt DATETIME
+          )
+          ''');
+
+    await db.execute('''
+          CREATE TABLE $stockTable (
+            $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
+            $columnProductId INTEGER NOT NULL,
+            $columnVariantId INTEGER,
+            $columnStockCount num NOT NULL,
             $createAt DATETIME,
             $updatedAt DATETIME
           )

@@ -23,7 +23,7 @@ class UtilsWidget {
     Navigator.pop(context);
   }
 
-  static showWebXBottomSheet(BuildContext context, Widget child) {
+  static Future showWebXBottomSheet(BuildContext context, Widget child)  {
     return showModalBottomSheet(
       context: context,
       enableDrag: true,

@@ -25,11 +25,9 @@ class OrderRepo {
         Map<String, dynamic> orderData = Map.of(orderListData[i]);
         orderData['orderItems'] = orderItemListData;
         orderList.add(OrderModel.fromJson(orderData));
-      } else {
-        
-      }
+      } else {}
     }
-    
+
     return orderList;
   }
 

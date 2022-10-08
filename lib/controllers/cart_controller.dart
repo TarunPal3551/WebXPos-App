@@ -27,8 +27,7 @@ class CartController extends ChangeNotifier {
           await getVariantById(variantItem.entries.elementAt(i).key);
       Product? product = await getProductById(variant!.productId!);
       try {
-        cartProducts.add(
-            CartProduct(product!, variant,
+        cartProducts.add(CartProduct(product!, variant,
             quantity: variantItem.entries.elementAt(i).value));
       } catch (e) {
         print(e);
@@ -136,6 +135,7 @@ class CartController extends ChangeNotifier {
       clearCart();
       return orderList.first;
     } else {
+      print("Stock Settle Issue");
       return null;
     }
   }
@@ -165,13 +165,15 @@ class CartController extends ChangeNotifier {
         Product? product =
             await getProductById(cartProducts.elementAt(i).product.id!);
         if (product != null) {
-          double currentStock = product.stockCount?.toDouble() ?? 0.0;
+          num currentStock = (await productRepo.getProductStockCount(
+                      cartProducts.elementAt(i).product.id!.toString()))
+                  .toDouble() ??
+              0.0;
           double orderStock =
               (cartProducts.elementAt(i).quantity) * (variant.unit!.toDouble());
           if (currentStock >= orderStock) {
             double newStockValue = currentStock - orderStock;
-            await productRepo.updateProduct(product.id!,
-                updateData: {DatabaseHandler.columnStockCount: newStockValue});
+            await productRepo.updateStock(product.id!, newStockValue);
           } else {
             return false;
           }

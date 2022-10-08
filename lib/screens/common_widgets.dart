@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webx_pos/controllers/cart_controller.dart';
 import 'package:webx_pos/controllers/product_controller.dart';
+import 'package:webx_pos/screens/common_widget/exitDialog.dart';
 import 'package:webx_pos/utils/webx_colors.dart';
 
 class CommonWidget {
-  static Widget getQuantityButton(
-      CartController cartController, int variantId, int productId) {
+  static Widget getQuantityButton(CartController cartController, int variantId,
+      int productId) {
     return ChangeNotifierProvider.value(
       value: cartController,
       child: Card(
@@ -54,10 +55,9 @@ class CommonWidget {
     );
   }
 
-  static Future<dynamic> stockUpdateDialog(
-      {required BuildContext context,
-      required num currentQuantity,
-      required int productId}) async {
+  static Future<dynamic> stockUpdateDialog({required BuildContext context,
+    required num currentQuantity,
+    required int productId}) async {
     double quantity = currentQuantity.toDouble();
 
     return await showDialog(
@@ -105,7 +105,7 @@ class CommonWidget {
                             decoration: const InputDecoration(
                                 hintText: "Enter new stock value",
                                 floatingLabelBehavior:
-                                    FloatingLabelBehavior.always,
+                                FloatingLabelBehavior.always,
                                 labelText: "New Stock Count",
                                 labelStyle: TextStyle(fontSize: 18)),
                           ),
@@ -121,16 +121,17 @@ class CommonWidget {
                             child: TextButton(
                                 style: ButtonStyle(
                                     foregroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            Colors.white),
+                                    MaterialStateProperty.all<Color>(
+                                        Colors.white),
                                     backgroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            WebXColor.accent),
+                                    MaterialStateProperty.all<Color>(
+                                        WebXColor.accent),
                                     shape: MaterialStateProperty.all<
-                                            RoundedRectangleBorder>(
+                                        RoundedRectangleBorder>(
                                         RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ))),
+                                          borderRadius: BorderRadius.circular(
+                                              8.0),
+                                        ))),
                                 child: Text(
                                   "Submit".toUpperCase(),
                                   style: const TextStyle(
@@ -139,7 +140,7 @@ class CommonWidget {
                                 ),
                                 onPressed: () async {
                                   await Provider.of<ProductController>(context,
-                                          listen: false)
+                                      listen: false)
                                       .updateProductStock(productId, quantity);
                                   Navigator.pop(context);
                                 })),
@@ -179,7 +180,8 @@ class CommonWidget {
                 children: [
                   Text(
                     "Order Id # ${orderId}",
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20),
                   ),
                   const SizedBox(
                     height: 10,
@@ -198,16 +200,17 @@ class CommonWidget {
                           child: TextButton(
                               style: ButtonStyle(
                                   foregroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          Colors.white),
+                                  MaterialStateProperty.all<Color>(
+                                      Colors.white),
                                   backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          WebXColor.accent),
+                                  MaterialStateProperty.all<Color>(
+                                      WebXColor.accent),
                                   shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder>(
                                       RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ))),
+                                        borderRadius: BorderRadius.circular(
+                                            8.0),
+                                      ))),
                               child: Text(
                                 "DONE".toUpperCase(),
                                 style: const TextStyle(
@@ -227,5 +230,19 @@ class CommonWidget {
         );
       },
     );
+  }
+
+  static Future showConfirmDialog(BuildContext context, {
+    required String title,
+    required String message,
+    required VoidCallback onYes,
+  }) {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return ConfirmationDialog(
+              title: title, message: message, onYes: onYes);
+        });
   }
 }

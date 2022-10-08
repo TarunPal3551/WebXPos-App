@@ -9,6 +9,9 @@ class OrderList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
+    DateTime startDateTime = DateTime.now().subtract(const Duration(
+      days: 0
+    ));
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -23,7 +26,7 @@ class OrderList extends StatelessWidget {
                   height: 5,
                 ),
                 Text(
-                  WebXConstant.formatDate(DateTime.now().toIso8601String()),
+                  WebXConstant.formatDate(startDateTime.toIso8601String()),
                   style: const TextStyle(fontSize: 14),
                 ),
               ],
@@ -38,7 +41,7 @@ class OrderList extends StatelessWidget {
       body: ChangeNotifierProvider(
         create: (context) => OrderController()
           ..getOrderList(
-            startDate: DateTime.now(),
+            startDate: startDateTime,
           ),
         builder: (context, child) {
           return SingleChildScrollView(

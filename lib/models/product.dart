@@ -5,14 +5,12 @@ class Product {
     String? desc,
     int? productId,
     double? price,
-    double? stockCount,
   }) {
     _id = id;
     _name = name;
     _desc = desc;
     _productId = productId;
     _price = price;
-    _stockCount = stockCount;
   }
 
   Product.fromJson(dynamic json) {
@@ -21,8 +19,6 @@ class Product {
     _desc = json['desc'];
     _productId = json['product_id'];
     _price = json['price'];
-    _stockCount = json['stock_count'];
-
   }
 
   int? _id;
@@ -30,8 +26,6 @@ class Product {
   String? _desc;
   int? _productId;
   double? _price;
-  num? _stockCount;
-
 
   int? get id => _id;
 
@@ -43,10 +37,6 @@ class Product {
 
   double? get price => _price;
 
-  num? get stockCount => _stockCount;
-
-
-
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
     map['id'] = _id;
@@ -54,9 +44,6 @@ class Product {
     map['desc'] = _desc;
     map['product_id'] = _productId;
     map['price'] = _price;
-    map['stock_count'] = _stockCount;
     return map;
   }
 }
-
-
