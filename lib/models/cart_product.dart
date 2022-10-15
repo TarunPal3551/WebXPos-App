@@ -1,6 +1,10 @@
 import 'package:webx_pos/models/product.dart';
 import 'package:webx_pos/models/variant.dart';
 
+/// @author TARUN PAL
+/// @email tarunplay3551@gmail.com
+/// @DATE ${DATE}
+
 class CartProduct {
   Product _product;
   Variant _variant;

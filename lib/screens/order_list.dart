@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:webx_pos/controllers/order_controller.dart';
+import 'package:webx_pos/models/download_range_enum.dart';
+import 'package:webx_pos/screens/common_widget/my_text_field.dart';
+import 'package:webx_pos/screens/common_widget/webx_textfield.dart';
+import 'package:webx_pos/screens/common_widgets.dart';
+import 'package:webx_pos/screens/components/download_summary_bottomsheet.dart';
+import 'package:webx_pos/utils/utils_widget.dart';
 import 'package:webx_pos/utils/webx_colors.dart';
 import 'package:webx_pos/utils/webx_constant.dart';
 
@@ -9,9 +15,7 @@ class OrderList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    DateTime startDateTime = DateTime.now().subtract(const Duration(
-      days: 0
-    ));
+    DateTime startDateTime = DateTime.now().subtract(const Duration(days: 0));
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -31,11 +35,19 @@ class OrderList extends StatelessWidget {
                 ),
               ],
             )),
-        actions: const [
-          Icon(Icons.refresh),
+        actions: [
+          InkWell(
+            child: Icon(Icons.download),
+            onTap: () {
+              DownloadRange selectedValue = DownloadRange.LASTYEAR;
+              UtilsWidget.showWebXBottomSheet(
+                  context, DownloadSummaryBottomSheet());
+            },
+          ),
+
           SizedBox(
             width: 20,
-          )
+          ),
         ],
       ),
       body: ChangeNotifierProvider(
@@ -143,6 +155,7 @@ class OrderList extends StatelessWidget {
                           border: Border.all(color: Colors.white, width: 2),
                           borderRadius: BorderRadius.circular(16)),
                       showCheckboxColumn: true,
+
                       sortAscending: true,
                       showBottomBorder: true,
                       sortColumnIndex: 3,

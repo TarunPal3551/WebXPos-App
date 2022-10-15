@@ -17,85 +17,41 @@ class ProductEditor extends StatelessWidget {
 
   final _formKey = GlobalKey<FormState>();
 
-  Widget variantAddView(int index, BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: Provider.of<ProductController>(context),
-      builder: (context, child) {
-        return Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            TextFormField(
-              controller: Provider.of<ProductController>(context)
-                  .nameListTextEditingController[index],
-              validator: (value) {
-                return value!.isNotEmpty ? null : "Required";
-              },
-              decoration: const InputDecoration(hintText: "Name"),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            TextFormField(
-              controller: Provider.of<ProductController>(context)
-                  .priceListTextEditingController[index],
-              validator: (value) {
-                return value!.isNotEmpty ? null : "Required";
-              },
-              decoration: const InputDecoration(hintText: "Price"),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            TextFormField(
-              controller: Provider.of<ProductController>(context)
-                  .unitValueListTextEditingController[index],
-              validator: (value) {
-                return value!.isNotEmpty ? null : "Required";
-              },
-              decoration:
-                  const InputDecoration(hintText: "Unit Value , eg - 0.5 , 1"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return ChangeNotifierProvider<ProductController>(
       create: (context) {
-        return ProductController();
-      },
-      builder: (context, child) {
         Provider.of<ProductController>(context, listen: false)
             .setInitialData(forEdit: true, productData: productData);
-        return Scaffold(
-          backgroundColor: WebXColor.backgroundColor,
-          appBar: AppBar(
-            title: const Text("Product Editor"),
-          ),
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text(
-                      "ADD PRODUCT",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                Form(
-                    key: _formKey,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
+        return ProductController()
+          ..setInitialData(forEdit: true, productData: productData);
+      },
+      child: Scaffold(
+        backgroundColor: WebXColor.backgroundColor,
+        appBar: AppBar(
+          title: const Text("Product Editor"),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text(
+                    "ADD PRODUCT",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              Form(
+                  key: _formKey,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: SingleChildScrollView(
                       child: Column(
                         children: [
                           customTextField(
@@ -188,7 +144,8 @@ class ProductEditor extends StatelessWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                         ),
-                                        variantAddView(index, context),
+                                        CommonWidget.variantAddView(
+                                            index, context),
                                       ],
                                     );
                                   },
@@ -205,53 +162,64 @@ class ProductEditor extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ))
-              ],
-            ),
-          ),
-          bottomSheet: Container(
-            padding: const EdgeInsets.fromLTRB(15, 15, 15, 40),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    style: ButtonStyle(
-                        foregroundColor:
-                            MaterialStateProperty.all<Color>(Colors.white),
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(WebXColor.accent),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ))),
-                    child: Text(
-                      "Submit".toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                      ),
                     ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        if (Provider.of<ProductController>(context,
-                                listen: false)
-                            .nameListTextEditingController
-                            .isNotEmpty) {
-                          UtilsWidget.showLoaderDialog(context);
+                  ))
+            ],
+          ),
+        ),
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.fromLTRB(15, 15, 15, 40),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  style: ButtonStyle(
+                      foregroundColor:
+                          MaterialStateProperty.all<Color>(Colors.white),
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(WebXColor.accent),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ))),
+                  child: Text(
+                    "Submit".toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      if (Provider.of<ProductController>(context, listen: false)
+                          .nameListTextEditingController
+                          .isNotEmpty) {
+                        UtilsWidget.showLoaderDialog(context);
+                        if (forEdit) {
+                          await Provider.of<ProductController>(context,
+                                  listen: false)
+                              .editProductData(productData!);
+                          UtilsWidget.hideLoading(context);
+                          Navigator.pop(context);
+                        } else {
                           await Provider.of<ProductController>(context,
                                   listen: false)
                               .submitProductData();
                           UtilsWidget.hideLoading(context);
                           Navigator.pop(context);
-                        } else {}
-                      }
-                    },
-                  ),
+                        }
+                      } else {}
+                    }
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
+        ),
+      ),
+      builder: (context, child) {
+        Provider.of<ProductController>(context, listen: false)
+            .setInitialData(forEdit: true, productData: productData);
+        return child!;
       },
     );
   }

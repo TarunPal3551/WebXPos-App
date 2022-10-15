@@ -16,20 +16,20 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: WebXColor.backgroundColor,
-      body: ChangeNotifierProvider.value(
-        value: Provider.of<CartController>(context),
-        builder: (context, child) {
-          print(Provider.of<CartController>(context).cartProducts.length);
-          return ChangeNotifierProvider<ProductController>(
-            create: (context) {
-              return ProductController();
-            },
-            builder: (contextProduct, child) {
-              return SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
+    return Container(
+      height: 400,
+      child: Scaffold(
+        backgroundColor: WebXColor.backgroundColor,
+        body: ChangeNotifierProvider.value(
+          value: Provider.of<CartController>(context),
+          builder: (context, child) {
+            print(Provider.of<CartController>(context).cartProducts.length);
+            return ChangeNotifierProvider<ProductController>(
+              create: (context) {
+                return ProductController();
+              },
+              builder: (contextProduct, child) {
+                return Column(
                   children: [
                     if (context.watch<CartController>().cartProducts.isNotEmpty)
                       ListView.separated(
@@ -137,64 +137,64 @@ class CartScreen extends StatelessWidget {
                         ],
                       )
                   ],
-                ),
-              );
-            },
-          );
-        },
-      ),
-      bottomNavigationBar: context
-              .watch<CartController>()
-              .cartProducts
-              .isNotEmpty
-          ? Container(
-              margin: const EdgeInsets.only(bottom: 30, left: 20, right: 20),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      style: ButtonStyle(
-                          foregroundColor:
-                              MaterialStateProperty.all<Color>(Colors.white),
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              WebXColor.accent),
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ))),
-                      child: Text(
-                        "Checkout".toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 16,
+                );
+              },
+            );
+          },
+        ),
+        bottomNavigationBar: context
+                .watch<CartController>()
+                .cartProducts
+                .isNotEmpty
+            ? Container(
+                margin: const EdgeInsets.only(bottom: 30, left: 20, right: 20),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        style: ButtonStyle(
+                            foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.white),
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                WebXColor.accent),
+                            shape:
+                                MaterialStateProperty.all<RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ))),
+                        child: Text(
+                          "Checkout".toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                          ),
                         ),
+                        onPressed: () async {
+                          OrderModel? orderModel =
+                              await Provider.of<CartController>(context,
+                                      listen: false)
+                                  .createOrder();
+                          if (orderModel != null) {
+                            Provider.of<ProductController>(context, listen: false).getProducts();
+                            CommonWidget.successDialog(
+                                    context: context, orderId: orderModel.id!)
+                                .then((value) async {
+                              Provider.of<CartController>(context, listen: false)
+                                  .getCartProduct();
+                              Navigator.pop(context);
+                            });
+                          }
+                        },
                       ),
-                      onPressed: () async {
-                        OrderModel? orderModel =
-                            await Provider.of<CartController>(context,
-                                    listen: false)
-                                .createOrder();
-                        if (orderModel != null) {
-                          Provider.of<ProductController>(context, listen: false).getProducts();
-                          CommonWidget.successDialog(
-                                  context: context, orderId: orderModel.id!)
-                              .then((value) async {
-                            Provider.of<CartController>(context, listen: false)
-                                .getCartProduct();
-                            Navigator.pop(context);
-                          });
-                        }
-                      },
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              )
+            : Container(
+                height: 0,
               ),
-            )
-          : Container(
-              height: 0,
-            ),
+      ),
     );
   }
 }

@@ -23,14 +23,16 @@ class UtilsWidget {
     Navigator.pop(context);
   }
 
-  static Future showWebXBottomSheet(BuildContext context, Widget child)  {
+  static Future showWebXBottomSheet(
+    BuildContext context,
+    Widget child,
+  ) {
     return showModalBottomSheet(
       context: context,
       enableDrag: true,
       elevation: 0,
-      // isScrollControlled: true,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
-
       builder: (context) {
         return Stack(
           children: [
@@ -44,7 +46,8 @@ class UtilsWidget {
                 },
                 mini: true,
                 backgroundColor: WebXColor.black,
-                child: const Icon(Icons.close, color: WebXColor.backgroundColor),
+                child:
+                    const Icon(Icons.close, color: WebXColor.backgroundColor),
               ),
             ),
             Container(
@@ -55,9 +58,12 @@ class UtilsWidget {
                   ),
                   color: WebXColor.backgroundColor,
                 ),
-                padding: const EdgeInsets.only(top: 20,left: 4,right: 4),
+                padding: const EdgeInsets.only(top: 20, left: 4, right: 4),
                 margin: const EdgeInsets.only(top: 70),
-                child: child),
+                child: SingleChildScrollView(
+                    child: Column(
+                  children: [child],
+                ))),
           ],
         );
       },

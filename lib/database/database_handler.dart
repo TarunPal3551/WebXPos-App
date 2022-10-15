@@ -21,6 +21,7 @@ class DatabaseHandler {
   static const columnTotal = 'total';
   static const createAt = 'createdAt';
   static const updatedAt = 'updatedAt';
+  static const deletedAt = 'deletedAt';
   static const columnVariantId = 'variant_id';
   static const columnOrderId = 'order_id';
   static const columnQuantity = 'quantity';
@@ -48,11 +49,20 @@ class DatabaseHandler {
   }
 
   Future<int> insert(String tableName, {Map<String, dynamic>? data}) async {
-    Database? db = await instance.database;
-    Map<String, dynamic> insertData = data!;
-    insertData[createAt] = DateTime.now().toIso8601String();
-    insertData[updatedAt] = null;
-    return await db!.insert(tableName, insertData);
+    try {
+      Database? db = await instance.database;
+      Map<String, dynamic> insertData = data!;
+      insertData[createAt] = data.containsKey(createAt)
+          ? data[createAt]
+          : DateTime.now().toIso8601String();
+      insertData[updatedAt] = data.containsKey(updatedAt)
+          ? data[updatedAt]
+          : DateTime.now().toIso8601String();
+      return await db!.insert(tableName, insertData);
+    } catch (e) {
+      print(e);
+      return -1;
+    }
   }
 
   Future<int> updateData(
@@ -63,7 +73,9 @@ class DatabaseHandler {
   }) async {
     Database? db = await instance.database;
     Map<String, dynamic> insertData = data!;
-    insertData[updatedAt] = DateTime.now().toIso8601String();
+    insertData[updatedAt] = data.containsKey(updatedAt)
+        ? data[updatedAt]
+        : DateTime.now().toIso8601String();
     return await db!.update(
       tableName,
       insertData,
@@ -104,7 +116,8 @@ class DatabaseHandler {
             $columnName TEXT NOT NULL,
             $columnDesc TEXT NOT NULL,
             $createAt DATETIME,
-            $updatedAt DATETIME      
+            $updatedAt DATETIME,
+            $deletedAt INTEGER  
           )
           ''');
 
@@ -116,8 +129,9 @@ class DatabaseHandler {
             $columnProductId INTEGER NOT NULL,
             $columnPrice num NOT NULL,
             $columnUnitValue num NOT NULL,
-              $createAt DATETIME,
-            $updatedAt DATETIME
+             $createAt DATETIME,
+            $updatedAt DATETIME,
+             $deletedAt INTEGER  
           )
           ''');
 
@@ -144,6 +158,7 @@ class DatabaseHandler {
             $columnProductName TEXT NOT NULL,
             $createAt DATETIME,
             $updatedAt DATETIME
+      
           )
           ''');
 
@@ -162,6 +177,10 @@ class DatabaseHandler {
   // delete
   Future<int> deleteData(String tableName, int id) async {
     Database? db = await instance.database;
+    if (tableName == DatabaseHandler.variantsTable ||
+        tableName == DatabaseHandler.productTable) {
+      return updateData(tableName, id, data: {deletedAt: 1});
+    }
     return await db!.delete(tableName, where: "id=?", whereArgs: [id]);
   }
 }

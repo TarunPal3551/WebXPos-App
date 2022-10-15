@@ -4,6 +4,8 @@ import 'package:webx_pos/models/order_model.dart';
 import 'package:webx_pos/models/product.dart';
 import 'package:webx_pos/models/product_variant.dart';
 import 'package:webx_pos/models/variant.dart';
+import 'package:webx_pos/utils/utils_widget.dart';
+import 'package:webx_pos/utils/webx_constant.dart';
 import 'package:webx_pos/utils/webx_helper.dart';
 
 class ProductRepo {
@@ -17,9 +19,11 @@ class ProductRepo {
   }
 
   // update Product
-  Future<int> updateProduct(int id, {Map<String, dynamic>? updateData}) async {
-    return await dbHelper.updateData(DatabaseHandler.productTable, id,
-        data: updateData);
+  Future<int> updateProduct(int id, String name, String desc) async {
+    return await dbHelper.updateData(DatabaseHandler.productTable, id, data: {
+      DatabaseHandler.columnName: name,
+      DatabaseHandler.columnDesc: desc
+    });
   }
 
   Future<int> updateStock(int productId, num stockCount) async {
@@ -27,26 +31,49 @@ class ProductRepo {
         DatabaseHandler.stockTable,
         whereColumnName: DatabaseHandler.columnProductId,
         value: productId.toString());
+    DateTime today = DateUtils.dateOnly(DateTime.now());
+    // return await dbHelper.insert(DatabaseHandler.stockTable, data: {
+    //   DatabaseHandler.columnStockCount: stockCount,
+    //   DatabaseHandler.columnProductId: productId,
+    //   DatabaseHandler.columnVariantId: null,
+    //   DatabaseHandler.createAt: WebXConstant.formatDate(dateTime),
+    // });
+
+    // print(data);
+    // DateTime today = DateUtils.dateOnly(DateTime.now());
+
     if (data.isNotEmpty) {
       DateTime createdDate = DateUtils.dateOnly(
           DateTime.parse(data.first[DatabaseHandler.createAt]));
-      DateTime today = DateUtils.dateOnly(DateTime.now());
+      print("object1");
       if (createdDate.isAtSameMomentAs(today)) {
-        return await dbHelper.updateData(DatabaseHandler.stockTable, productId,
-            data: {DatabaseHandler.columnStockCount: stockCount},
+        print("object2");
+        print(today.toIso8601String());
+        return await dbHelper.updateData(
+            DatabaseHandler.stockTable, productId,
+            data: {
+              DatabaseHandler.columnStockCount: stockCount,
+              DatabaseHandler.updatedAt: today.toIso8601String(),
+              DatabaseHandler.createAt: createdDate.toIso8601String()
+            },
             columnName: DatabaseHandler.columnProductId);
       } else {
+        print("object3");
         return await dbHelper.insert(DatabaseHandler.stockTable, data: {
           DatabaseHandler.columnStockCount: stockCount,
           DatabaseHandler.columnProductId: productId,
           DatabaseHandler.columnVariantId: null,
+          DatabaseHandler.updatedAt: null,
+          DatabaseHandler.createAt: today.toString(),
         });
       }
     } else {
+      print("object111");
       return await dbHelper.insert(DatabaseHandler.stockTable, data: {
         DatabaseHandler.columnStockCount: stockCount,
         DatabaseHandler.columnProductId: productId,
         DatabaseHandler.columnVariantId: null,
+        DatabaseHandler.createAt: today.toString(),
       });
     }
   }
@@ -66,11 +93,28 @@ class ProductRepo {
     });
   }
 
+  Future<int> updateVariants(
+      {required String name,
+      required String price,
+      required String unit,
+      required int productId,
+      int? variantId}) async {
+    return await dbHelper
+        .updateData(DatabaseHandler.variantsTable, variantId!, data: {
+      DatabaseHandler.columnName: name,
+      DatabaseHandler.columnDesc: name,
+      DatabaseHandler.columnUnitValue: unit,
+      DatabaseHandler.columnPrice: price,
+      DatabaseHandler.columnProductId: productId,
+    });
+  }
+
   // get products
   Future<List<Product>> getProducts() async {
     List<Map<String, dynamic?>> data =
         await dbHelper.getDataFromTable(DatabaseHandler.productTable);
     List<Product> productList = [];
+    print(data);
     data.forEach((element) {
       productList.add(Product.fromJson(element));
     });
@@ -114,11 +158,11 @@ class ProductRepo {
     }
     filterDate ??= DateTime.now().add(const Duration(days: 1));
     for (int i = 0; i < data.length; i++) {
+      print(data);
       DateTime dateTime = DateUtils.dateOnly(filterDate);
-      DateTime createdAt =
-          DateTime.parse(data.elementAt(i)[DatabaseHandler.createAt]);
-      if (WebXHelper.compareStartAndEndDate(
-          orderDate: createdAt.toString(), startDate: dateTime)) {
+      DateTime createdAt = DateUtils.dateOnly(
+          DateTime.parse(data.elementAt(i)[DatabaseHandler.createAt]));
+      if (createdAt.isAtSameMomentAs(dateTime)) {
         return [data.elementAt(i)];
       }
       if (i == data.length - 1) {
@@ -172,13 +216,13 @@ class ProductRepo {
   Future<List<ProductData>> productWithVariant() async {
     List<Map<String, dynamic>> productData =
         await dbHelper.getDataFromTable(DatabaseHandler.productTable);
+    print(productData);
     List<ProductData> finalList = [];
     for (int i = 0; i < productData.length; i++) {
       List<Map<String, dynamic>> variantData = await dbHelper.getDataFromTable(
           DatabaseHandler.variantsTable,
           whereColumnName: DatabaseHandler.columnProductId,
           value: productData[i]['id'].toString());
-
       final newData = Map.of(productData[i]);
       newData['variants'] = variantData ?? [];
 
@@ -190,6 +234,10 @@ class ProductRepo {
 
   Future<void> deleteProduct(int id) async {
     await dbHelper.deleteData(DatabaseHandler.productTable, id);
+  }
+
+  Future<void> deleteVariant(int variantId) async {
+    await dbHelper.deleteData(DatabaseHandler.variantsTable, variantId);
   }
 
   // create order

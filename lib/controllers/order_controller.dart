@@ -73,7 +73,8 @@ class OrderController extends ChangeNotifier {
                   value[j][DatabaseHandler.columnStockCount],
                   soldQuantityOfProduct.entries.elementAt(i).value,
                   product.id!,
-                  soldValueOfProduct[product.id!]!));
+                  soldValueOfProduct[product.id!]!,
+                  startDate));
             }
           }
         }
@@ -89,10 +90,9 @@ class OrderController extends ChangeNotifier {
               listOfProducts.elementAt(z).id!.toString(),
               filterDate: startDate));
           productStock.add(ProductStock(listOfProducts.elementAt(z).name!,
-              value, 0, listOfProducts.elementAt(z).id!, 0));
+              value, 0, listOfProducts.elementAt(z).id!, 0, startDate));
         }
       }
-
       notifyListeners();
     });
   }

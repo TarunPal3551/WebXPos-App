@@ -1,0 +1,9 @@
+enum DownloadRange {
+  TODAY,
+  YESTERDAY,
+  LASTWEEK,
+  LASTMONTH,
+  LASTYEAR,
+  CUSTOM
+
+}

@@ -87,31 +87,24 @@ class _ProductListState extends State<ProductList> {
                       )
                     : Container(),
             appBar: AppBar(
-              title: const Text("Product List"),
+              title: Text(!widget.forCart ? "Product List" : "WebX POS"),
               actions: [
-                InkWell(
-                  child: const Icon(Icons.add),
-                  onTap: () {
-                    Navigator.push(contextMain, MaterialPageRoute(
-                      builder: (context) {
-                        return ProductEditor();
-                      },
-                    )).then((value) {
-                      Provider.of<ProductController>(contextMain, listen: false)
-                          .getProducts();
-                    });
-                  },
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                InkWell(
-                  child: const Icon(Icons.refresh),
-                  onTap: () {
-                    Provider.of<ProductController>(contextMain, listen: false)
-                        .getProducts();
-                  },
-                ),
+                !widget.forCart
+                    ? InkWell(
+                        child: const Icon(Icons.add),
+                        onTap: () {
+                          Navigator.push(contextMain, MaterialPageRoute(
+                            builder: (context) {
+                              return ProductEditor();
+                            },
+                          )).then((value) {
+                            Provider.of<ProductController>(contextMain,
+                                    listen: false)
+                                .getProducts();
+                          });
+                        },
+                      )
+                    : Container(),
                 const SizedBox(
                   width: 10,
                 ),
@@ -383,25 +376,14 @@ class _ProductListState extends State<ProductList> {
                       children: [
                         InkWell(
                             onTap: () {
-                              UtilsWidget.showWebXBottomSheet(
-                                  context,
-                                  Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    padding: const EdgeInsets.only(
-                                        left: 10, right: 10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: const [
-                                        Text(
-                                          "Edit Variant",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18),
-                                        ),
-                                      ],
-                                    ),
-                                  ));
+                              editVariantView(
+                                variant.name!,
+                                variant.price!.toString(),
+                                variant.unit!.toString(),
+                                variant.id!,
+                                variant.productId!,
+                                context,
+                              );
                             },
                             child: const CircleAvatar(
                               backgroundColor: WebXColor.primary,
@@ -416,7 +398,16 @@ class _ProductListState extends State<ProductList> {
                           width: 10,
                         ),
                         InkWell(
-                            onTap: () {},
+                            onTap: () {
+                              CommonWidget.showConfirmDialog(context,
+                                  title: "Delete Variant",
+                                  message: "Are you sure you want to delete ?",
+                                  onYes: () async {
+                                await Provider.of<ProductController>(context,
+                                        listen: false)
+                                    .removeVariantById(variant.id!);
+                              });
+                            },
                             child: const CircleAvatar(
                               radius: 15,
                               backgroundColor: WebXColor.primary,
@@ -433,5 +424,116 @@ class _ProductListState extends State<ProductList> {
         ),
       ),
     );
+  }
+
+  void editVariantView(String name, String price, String unit, int id,
+      int productId, BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    TextEditingController nameEditingController =
+        TextEditingController(text: name);
+    TextEditingController priceEditingController =
+        TextEditingController(text: price);
+    TextEditingController unitEditingController =
+        TextEditingController(text: unit);
+
+    UtilsWidget.showWebXBottomSheet(
+        context,
+        Container(
+          width: MediaQuery.of(context).size.width,
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Edit Variant",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Form(
+                    child: Column(
+                  children: [
+                    TextFormField(
+                      controller: nameEditingController,
+                      validator: (value) {
+                        return value!.isNotEmpty ? null : "Required";
+                      },
+                      decoration: const InputDecoration(hintText: "Name"),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    TextFormField(
+                      controller: priceEditingController,
+                      validator: (value) {
+                        return value!.isNotEmpty ? null : "Required";
+                      },
+                      decoration: const InputDecoration(hintText: "Price"),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    TextFormField(
+                      controller: unitEditingController,
+                      validator: (value) {
+                        return value!.isNotEmpty ? null : "Required";
+                      },
+                      decoration: const InputDecoration(
+                          hintText: "Unit Value , eg - 0.5 , 1"),
+                    ),
+                  ],
+                )),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          style: ButtonStyle(
+                              foregroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.white),
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  WebXColor.accent),
+                              shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ))),
+                          child: Text(
+                            "Submit".toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              UtilsWidget.showLoaderDialog(context);
+                              Provider.of<ProductController>(context,
+                                      listen: false)
+                                  .editVariant(
+                                      productId,
+                                      priceEditingController.text,
+                                      unitEditingController.text,
+                                      nameEditingController.text,
+                                      id);
+                              UtilsWidget.hideLoading(context);
+                              Navigator.pop(context);
+                              Provider.of<ProductController>(context,
+                                      listen: false)
+                                  .getProducts();
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        ));
   }
 }

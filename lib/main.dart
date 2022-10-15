@@ -4,6 +4,7 @@ import 'package:webx_pos/controllers/cart_controller.dart';
 import 'package:webx_pos/controllers/home_controller.dart';
 import 'package:webx_pos/controllers/order_controller.dart';
 import 'package:webx_pos/controllers/product_controller.dart';
+import 'package:webx_pos/controllers/summary_controller.dart';
 import 'package:webx_pos/screens/product_edit_screen.dart';
 import 'package:webx_pos/screens/product_list.dart';
 import 'package:webx_pos/utils/webx_colors.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => HomeController()),
         ChangeNotifierProvider(create: (_) => OrderController()),
         ChangeNotifierProvider(create: (_) => CartController()),
+        ChangeNotifierProvider(create: (_) => SummaryController()),
       ],
       child: MaterialApp(
           title: 'WebXPos',

@@ -9,6 +9,7 @@ class WebXColor {
   static const Color secondaryTransparent = Color(0x8011a1fd);
   static const Color textColorPrimary = Color(0xff085DB6);
   static const Color textColorGrey = Color(0xff9AA2AB);
+  static const Color grey = Color(0xff9AA2AB);
   static const Color textColorGreyTransparent = Color(0x669aa2ab);
   static const Color textColorLight = Color(0xffC3CED9);
   static const Color backgroundColor = Color(0xffffffff);

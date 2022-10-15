@@ -7,6 +7,7 @@ import 'package:webx_pos/repository/product_repo.dart';
 
 class ProductController extends ChangeNotifier {
   List<TextEditingController> nameListTextEditingController = [];
+  List<int?> variantIdList = [];
   List<TextEditingController> unitValueListTextEditingController = [];
   List<TextEditingController> priceListTextEditingController = [];
   TextEditingController productNameEditingController = TextEditingController();
@@ -61,6 +62,7 @@ class ProductController extends ChangeNotifier {
         nameListTextEditingController.clear();
         unitValueListTextEditingController.clear();
         priceListTextEditingController.clear();
+        variantIdList.clear();
         if (productData.variants != null && productData.variants!.isNotEmpty) {
           for (int i = 0; i < productData.variants!.length; i++) {
             nameListTextEditingController.add(TextEditingController(
@@ -69,6 +71,7 @@ class ProductController extends ChangeNotifier {
                 text: productData.variants!.elementAt(i).unit.toString()));
             priceListTextEditingController.add(TextEditingController(
                 text: productData.variants!.elementAt(i).price.toString()));
+            variantIdList.add(productData.variants!.elementAt(i).id);
           }
         }
       }
@@ -83,6 +86,7 @@ class ProductController extends ChangeNotifier {
     nameListTextEditingController.add(TextEditingController());
     unitValueListTextEditingController.add(TextEditingController());
     priceListTextEditingController.add(TextEditingController());
+    variantIdList.add(null);
     notifyListeners();
   }
 
@@ -104,12 +108,54 @@ class ProductController extends ChangeNotifier {
     });
   }
 
+  Future<void> editVariant(int productId, String price, String unitValue,
+      String name, int variantId) async {
+    await productRepo.updateVariants(
+        name: name,
+        price: price,
+        productId: productId,
+        variantId: variantId,
+        unit: unitValue);
+  }
+
+  Future<void> editProductData(ProductData productData) async {
+    final id = await productRepo.updateProduct(productData.id!,
+        productNameEditingController.text, productDescEditingController.text);
+    for (int i = 0; i < nameListTextEditingController.length; i++) {
+      if (variantIdList.elementAt(i) != null) {
+        await productRepo.updateVariants(
+            name: nameListTextEditingController.elementAt(i).text,
+            price: priceListTextEditingController.elementAt(i).text,
+            productId: productData.id!,
+            variantId: variantIdList.elementAt(i),
+            unit: unitValueListTextEditingController.elementAt(i).text);
+      } else {
+        await productRepo.addVariants(
+            name: nameListTextEditingController.elementAt(i).text,
+            price: priceListTextEditingController.elementAt(i).text,
+            productId: productData.id!,
+            unit: unitValueListTextEditingController.elementAt(i).text);
+      }
+    }
+    getProductStockCount(productList).then((value) {
+      print("Product Stocks loaded");
+      isStockLoading = false;
+      notifyListeners();
+    });
+  }
+
   // remove
   void removeNewVariant(int index) {
     nameListTextEditingController.removeAt(index);
     unitValueListTextEditingController.removeAt(index);
     priceListTextEditingController.removeAt(index);
+    variantIdList.remove(index);
     notifyListeners();
+  }
+
+  Future<void> removeVariantById(int variantId) async {
+    await productRepo.deleteVariant(variantId);
+    getProducts();
   }
 
   // delete product
